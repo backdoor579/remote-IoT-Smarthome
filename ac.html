@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AC Remote Control</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .remote-container {
+            width: 360px;
+            background: linear-gradient(160deg, #1a2a3a 0%, #2a3a4a 100%);
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6),
+                        inset 0 2px 1px rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(5px);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(to right, #fff 0%, #aad4ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(170, 212, 255, 0.3);
+        }
+        
+        .location {
+            font-size: 14px;
+            color: #aad4ff;
+            margin-bottom: 5px;
+            text-align: center;
+            letter-spacing: 1px;
+            opacity: 0.8;
+        }
+        
+        .status {
+            font-size: 12px;
+            color: #78e08f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 25px;
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            background-color: #78e08f;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #78e08f;
+            animation: pulse 2s infinite;
+        }
+        
+        .temperature-display {
+            font-size: 72px;
+            font-weight: 300;
+            text-align: center;
+            margin: 25px 0;
+            background: linear-gradient(to right, #fff 0%, #aad4ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            text-shadow: 0 2px 10px rgba(170, 212, 255, 0.3);
+        }
+        
+        .temperature-display::after {
+            content: "°C";
+            font-size: 32px;
+            position: absolute;
+            top: 15px;
+            right: 70px;
+            background: linear-gradient(to right, #fff 0%, #aad4ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .temp-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .temp-btn {
+            background: linear-gradient(145deg, rgba(58, 90, 120, 0.7) 0%, rgba(42, 74, 104, 0.7) 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 28px;
+            font-weight: 300;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .temp-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+        }
+        
+        .temp-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .current-temp {
+            margin: 0 25px;
+            font-size: 28px;
+            min-width: 80px;
+            text-align: center;
+            color: #aad4ff;
+        }
+        
+        .mode-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .mode-btn {
+            background: linear-gradient(145deg, rgba(58, 90, 120, 0.7) 0%, rgba(42, 74, 104, 0.7) 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 15px 0;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .mode-btn:hover {
+            background: linear-gradient(145deg, rgba(79, 172, 254, 0.4) 0%, rgba(0, 242, 254, 0.4) 100%);
+        }
+        
+        .mode-btn:active {
+            transform: scale(0.97);
+        }
+        
+        .mode-btn.active {
+            background: linear-gradient(145deg, rgba(79, 172, 254, 0.8) 0%, rgba(0, 242, 254, 0.8) 100%);
+            box-shadow: 0 4px 20px rgba(79, 172, 254, 0.4);
+        }
+        
+        .mode-icon {
+            font-size: 24px;
+        }
+        
+        .fan-section {
+            margin-bottom: 25px;
+        }
+        
+        .fan-title {
+            font-size: 14px;
+            margin-bottom: 15px;
+            color: #aad4ff;
+            padding-left: 5px;
+            letter-spacing: 0.5px;
+        }
+        
+        .fan-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .fan-btn {
+            background: linear-gradient(145deg, rgba(58, 90, 120, 0.7) 0%, rgba(42, 74, 104, 0.7) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 0;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .fan-btn:hover {
+            background: linear-gradient(145deg, rgba(79, 172, 254, 0.4) 0%, rgba(0, 242, 254, 0.4) 100%);
+        }
+        
+        .fan-btn:active {
+            transform: scale(0.97);
+        }
+        
+        .fan-btn.active {
+            background: linear-gradient(145deg, rgba(79, 172, 254, 0.8) 0%, rgba(0, 242, 254, 0.8) 100%);
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+        }
+        
+        .power-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .power-status {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ff6b6b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .power-status.on {
+            color: #6bff6b;
+        }
+        
+        .power-btn {
+            background: linear-gradient(145deg, #ff6b6b 0%, #d13a3a 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 14px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        }
+        
+        .power-btn.on {
+            background: linear-gradient(145deg, #6bff6b 0%, #3ad13a 100%);
+            box-shadow: 0 4px 15px rgba(107, 255, 107, 0.3),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        }
+        
+        .power-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Animation for button press */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .button-animate {
+            animation: pulse 0.3s ease;
+        }
+        
+        /* Ripple effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.4);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+        
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        /* Glow effect for active elements */
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px rgba(79, 172, 254, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(79, 172, 254, 0.5); }
+            100% { box-shadow: 0 0 5px rgba(79, 172, 254, 0.3); }
+        }
+        
+        .active {
+            animation: glow 3s infinite;
+        }
+        
+        .back-btn {
+            display: block;
+            width: 100%;
+            background: linear-gradient(145deg, rgba(58, 90, 120, 0.7) 0%, rgba(42, 74, 104, 0.7) 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 14px 0;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            margin-top: 25px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .back-btn:hover {
+            background: linear-gradient(145deg, rgba(79, 172, 254, 0.4) 0%, rgba(0, 242, 254, 0.4) 100%);
+        }
+        
+        .back-btn:active {
+            transform: scale(0.97);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 400px) {
+            .remote-container {
+                width: 100%;
+                padding: 25px 20px;
+            }
+            
+            .temperature-display {
+                font-size: 60px;
+            }
+            
+            .temperature-display::after {
+                font-size: 28px;
+                right: 60px;
+            }
+            
+            .temp-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+            }
+        }
+    </style>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="remote-container">
+        <div class="header">
+            <h1>AC Control</h1>
+            <div class="location">LIVING ROOM</div>
+            <div class="status">
+                <div class="status-indicator"></div>
+                <span>CONNECTED</span>
+            </div>
+        </div>
+        
+        <div class="temperature-display" id="temperatureDisplay">24</div>
+        
+        <div class="temp-controls">
+            <button class="temp-btn" id="tempDown">-</button>
+            <div class="current-temp" id="currentTemp">24°C</div>
+            <button class="temp-btn" id="tempUp">+</button>
+        </div>
+        
+        <div class="mode-section">
+            <button class="mode-btn active" data-mode="cool">
+                <i class="fas fa-snowflake mode-icon"></i>
+                <span>Cool</span>
+            </button>
+            <button class="mode-btn" data-mode="dry">
+                <i class="fas fa-tint mode-icon"></i>
+                <span>Dry</span>
+            </button>
+            <button class="mode-btn" data-mode="fan">
+                <i class="fas fa-fan mode-icon"></i>
+                <span>Fan</span>
+            </button>
+            <button class="mode-btn" data-mode="auto">
+                <i class="fas fa-magic mode-icon"></i>
+                <span>Auto</span>
+            </button>
+        </div>
+        
+        <div class="fan-section">
+            <div class="fan-title">FAN SPEED</div>
+            <div class="fan-btns">
+                <button class="fan-btn active">Low</button>
+                <button class="fan-btn">Medium</button>
+                <button class="fan-btn">High</button>
+                <button class="fan-btn">Auto</button>
+            </div>
+        </div>
+        
+        <div class="power-section">
+            <div class="power-status" id="acStatus">OFF</div>
+            <button class="power-btn" id="acPowerBtn">POWER</button>
+        </div>
+        
+        <button class="back-btn" onclick="window.location.href='index.html'">Back to Home</button>
+    </div>
+
+    <script>
+        // Temperature control
+        const tempDisplay = document.getElementById('temperatureDisplay');
+        const currentTemp = document.getElementById('currentTemp');
+        const tempUp = document.getElementById('tempUp');
+        const tempDown = document.getElementById('tempDown');
+        let temperature = 24;
+        
+        function updateTemperature() {
+            tempDisplay.textContent = temperature;
+            currentTemp.textContent = `${temperature}°C`;
+        }
+        
+        tempUp.addEventListener('click', function() {
+            if (temperature < 30) {
+                temperature++;
+                updateTemperature();
+                animateButton(this);
+            }
+        });
+        
+        tempDown.addEventListener('click', function() {
+            if (temperature > 16) {
+                temperature--;
+                updateTemperature();
+                animateButton(this);
+            }
+        });
+        
+        // Mode selection
+        const modeBtns = document.querySelectorAll('.mode-btn');
+        modeBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                modeBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                animateButton(this);
+                console.log(`Mode changed to: ${this.dataset.mode}`);
+            });
+        });
+        
+        // Fan speed selection
+        const fanBtns = document.querySelectorAll('.fan-btn');
+        fanBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                fanBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                animateButton(this);
+                console.log(`Fan speed: ${this.textContent}`);
+            });
+        });
+        
+        // Power button
+        const acPowerBtn = document.getElementById('acPowerBtn');
+        const acStatus = document.getElementById('acStatus');
+        let isAcOn = false;
+        
+        acPowerBtn.addEventListener('click', function() {
+            isAcOn = !isAcOn;
+            if (isAcOn) {
+                acStatus.textContent = 'ON';
+                acStatus.classList.add('on');
+                acStatus.classList.remove('off');
+                acPowerBtn.classList.add('on');
+            } else {
+                acStatus.textContent = 'OFF';
+                acStatus.classList.add('off');
+                acStatus.classList.remove('on');
+                acPowerBtn.classList.remove('on');
+            }
+            animateButton(this);
+        });
+        
+        // Button animation
+        function animateButton(button) {
+            button.classList.add('button-animate');
+            setTimeout(() => {
+                button.classList.remove('button-animate');
+            }, 300);
+            createRipple(event);
+        }
+        
+        // Ripple effect
+        function createRipple(event) {
+            const button = event.currentTarget;
+            const circle = document.createElement("span");
+            const diameter = Math.max(button.clientWidth, button.clientHeight);
+            const radius = diameter / 2;
+            
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - button.getBoundingClientRect().left - radius}px`;
+            circle.style.top = `${event.clientY - button.getBoundingClientRect().top - radius}px`;
+            circle.classList.add("ripple");
+            
+            const ripple = button.getElementsByClassName("ripple")[0];
+            if (ripple) {
+                ripple.remove();
+            }
+            
+            button.appendChild(circle);
+        }
+        
+        // Add ripple effect to all buttons
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(button => {
+            button.addEventListener("click", createRipple);
+        });
+    </script>
+</body>
+</html>
